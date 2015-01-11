@@ -2,8 +2,8 @@
 // Created by Peter Karadi
 // July 2010
 
-parameters betta sig hh varphi zetta theta alfa G_over_Y eta_i epsilon gam gam_P kappa_pi kappa_y rho_i rho_ksi sigma_ksi rho_a sigma_a rho_g sigma_g sigma_Ne sigma_i rho_shock_psi sigma_psi kappa tau omega lambda chi b delta_c G_ss I_ss;
-var Y Ym K Keff L I C G Q varrho Lambda Rk R N Ne Nn nu eta phi z x Pm w VMPK U X D F Z i prem delta In Welf a ksi g infl inflstar ;
+parameters betta sig hh varphi zetta theta alfa G_over_Y eta_i epsilon gam gam_P kappa_pi kappa_y rho_i rho_ksi sigma_ksi rho_a sigma_a rho_g sigma_g sigma_Ne sigma_i rho_shock_psi sigma_psi kappa tau omega lambda chi b delta_c G_ss I_ss gammaEZ thetaEZ;
+var Y Ym K Keff L I C G Q varrho Lambda Rk R N Ne Nn nu eta phi z x Pm w VMPK U X D F Z i prem delta In Welf a ksi g infl inflstar u ev v;
 varexo e_a e_ksi e_g e_Ne e_i ;
 
 betta=0.99000000;
@@ -41,9 +41,18 @@ delta_c=0.02041451;
 G_ss       =   0.16975710;
 I_ss       =   0.14153927;
 
-
+gammaEZ = 2;
+thetaEZ = 1;
 
 model;
+// Eppstein Zinn Utility 
+// Utility
+u = log(C - hh*C(-1)) - chi/(1+varphi) * L^(1+varphi) ;
+// Expected Value Function
+ev = v(+1)^(1-gammaEZ);
+// 3. Value Function
+v = ((1-betta)*u^((1-gammaEZ)/thetaEZ)+ betta*(ev^(1/thetaEZ)))^(thetaEZ/(1-gammaEZ));
+  
 //Home household
 //1. Marginal utility of consumption
 exp(varrho)  =   (exp(C)-hh*exp(C(-1)))^(-sig)-betta*hh*(exp(C(+1))-hh*exp(C))^(-sig);
@@ -216,6 +225,10 @@ e_ksi=0.00000000;
 e_g=0.00000000;
 e_Ne=0.00000000;
 e_i=0.00000000;
+
+u = 1;
+v = 1;
+ev = 2;
 end;
 
 shocks;
@@ -228,7 +241,7 @@ end;
 
 check;
 
-steady;
+steady(maxit=100, solve_algo = 3);
 
 stoch_simul(order=1, periods=2000, irf=40,nograph);
 
