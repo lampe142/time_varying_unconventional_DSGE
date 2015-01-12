@@ -42,23 +42,26 @@ G_ss       =   0.16975710;
 I_ss       =   0.14153927;
 
 gammaEZ = 2;
-thetaEZ = 1;
+psiEZ = 0.5;
+thetaEZ = (1-gammaEZ)/(1-1/psiEZ);
 
 model;
 // Eppstein Zinn Utility 
-// Utility
-u = log(C - hh*C(-1)) - chi/(1+varphi) * L^(1+varphi) ;
+u = log(exp(C) - hh*exp(C(-1))) - chi/(1+varphi) * exp(L)^(1+varphi) ;
 // Expected Value Function
 ev = v(+1)^(1-gammaEZ);
 // 3. Value Function
 v = ((1-betta)*u^((1-gammaEZ)/thetaEZ)+ betta*(ev^(1/thetaEZ)))^(thetaEZ/(1-gammaEZ));
+// stochastic discount factor
+betta*(u(+1)/u)^((1-gammaEZ)/thetaEZ)*(exp(C)/exp(C(+1)))*(v(+1)^(1-gammaEZ)/ev)^(1-1/thetaEZ)*exp(R) = 1;
+
   
 //Home household
 //1. Marginal utility of consumption
 exp(varrho)  =   (exp(C)-hh*exp(C(-1)))^(-sig)-betta*hh*(exp(C(+1))-hh*exp(C))^(-sig);
 
 //2. Euler equation
-betta*exp(R)*exp(Lambda(+1))  =   1;
+// betta*exp(R)*exp(Lambda(+1))  =   1;
 
 //3. Stochastic discount rate
 exp(Lambda)  =   exp(varrho)/exp(varrho(-1));
@@ -226,9 +229,16 @@ e_g=0.00000000;
 e_Ne=0.00000000;
 e_i=0.00000000;
 
-u = 1;
-v = 1;
-ev = 2;
+
+
+u = -2.9719;
+v = u;
+ev = u^(1-gammaEZ);
+
+// u = log(exp(log(0.53)) - hh*exp(log(0.53))) - chi/(1+varphi) * exp(log(0.33))^(1+varphi); 
+// ev = (log(exp(log(0.53)) - hh*log(0.53)) - chi/(1+varphi) * exp(log(0.33))^(1+varphi))^gammaEZ;
+// v = log(exp(log(0.53)) - hh*exp(log(0.53))) - chi/(1+varphi) * exp(log(0.33))^(1+varphi); 
+
 end;
 
 shocks;
@@ -241,7 +251,7 @@ end;
 
 check;
 
-steady(maxit=100, solve_algo = 3);
+steady;
 
 stoch_simul(order=1, periods=2000, irf=40,nograph);
 
